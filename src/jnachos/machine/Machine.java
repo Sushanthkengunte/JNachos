@@ -7,6 +7,8 @@
  */
 package jnachos.machine;
 
+import java.util.HashMap;
+
 import jnachos.kern.*;
 
 /**
@@ -69,6 +71,10 @@ public class Machine {
 
 	// The registers in the CPU
 	public static int mRegisters[];
+	/**
+	 * Contains all the processes
+	 */
+	public static  HashMap<Integer,NachosProcess> hmForAllProcess=new HashMap<Integer,NachosProcess>();  
 
 	/**
 	 * The hardware timer. This class can throw interrupts at scheduable

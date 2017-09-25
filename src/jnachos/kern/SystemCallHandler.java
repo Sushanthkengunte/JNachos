@@ -73,6 +73,9 @@ public class SystemCallHandler {
 		Debug.print('a', "!!!!" + Machine.read1 + "," + Machine.read2 + "," + Machine.read4 + "," + Machine.write1 + ","
 				+ Machine.write2 + "," + Machine.write4);
 
+		// Increment the Program counter when a system call happens 
+		Machine.mRegisters[Machine.PCReg] =  Machine.mRegisters[Machine.PCReg] + 4;
+		
 		switch (pWhichSysCall) {
 		// If halt is received shut down
 		case SC_Halt:
@@ -87,7 +90,49 @@ public class SystemCallHandler {
 
 			System.out
 					.println("Current Process " + JNachos.getCurrentProcess().getName() + " exiting with code " + arg);
+			
+			JNachos.getCurrentProcess().finish();
+			break;
+		case SC_Fork:
+			Debug.print('a', "Create new process.");
+			// Forking new process
+			int returnValue = JNachos.getCurrentProcess().fork_System_Call();
+			Machine.writeRegister(2, returnValue);
+			JNachos.getCurrentProcess().saveUserState();
+			break;
+			
+			
+		case SC_Exec:
+			Debug.print('a', "Execute the program");
+			
+			System.out.println("Arguments Passed are "+Machine.mRegisters[2]+ " "+Machine.mRegisters[4]+" "+Machine.mRegisters[5]+" "+Machine.mRegisters[6]+" "+Machine.mRegisters[7] );
+ 		
+ 			int offset = Machine.readRegister(4);
+ 			
+ 			ArrayList<Character> sample = new ArrayList<Character>();
+ 			while(Machine.mMainMemory[offset] != '\0'){
+ 				
+ 				sample.add((char)Machine.mMainMemory[offset]);
+ 				
+ 				offset = offset + 1;
+ 			}
+ 			
+ 			String fileName = new String();
+ 			for(char each : sample){
+ 				fileName = fileName+each;
+ 			}
+ 			System.out.println("Executing file : " + fileName);
+ 			JNachos.startExecuting(fileName);
+ 		
+			System.out.println("Execute ");
+			break;
 
+		case SC_Join:
+			for(int temp : Machine.hmForAllProcess.keySet()){
+				int x = Machine.hmForAllProcess.get(temp).getProcessID();
+				System.out.println(x);
+			}
+			break;
 			// Finish the invoking process
 		/*	NachosProcess processSleeping = JNachos.getCurrentProcess().getWaitingProcess();
 			if( processSleeping != null){

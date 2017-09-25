@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.UUID;
 
 import javax.crypto.Mac;
+import javax.xml.crypto.dsig.spec.HMACParameterSpec;
 
 /**
  * Process states in JNachos. JUST_CREATED: The NachosProcess was just created.
@@ -115,7 +116,10 @@ public class NachosProcess implements Runnable {
 		
 		//give a unique ID to the process
 		counter++;
-		processID = counter;
+		setProcessID(counter);
+		
+		Machine.hmForAllProcess.put(getProcessID(), this);
+		
 	}
 
 	/**
@@ -244,6 +248,24 @@ public class NachosProcess implements Runnable {
 	}
 */
 	/**
+	 * Creates a new process,
+	 * Copies the Registers
+	 * Copies the address Space
+	 * creates a new thread and puts it in the ready queue
+	 */
+	public int fork_System_Call(){
+		int childProcessID = 0;
+		NachosProcess newChildProcess = new NachosProcess("Creating new child");
+		childProcessID = newChildProcess.getProcessID();
+		ProcessTest createInstancetoRun = new ProcessTest();
+		newChildProcess.setSpace(JNachos.getCurrentProcess().getSpace());
+		newChildProcess.setSpecificRegister(2, 0);
+		newChildProcess.saveUserState();
+		newChildProcess.fork(createInstancetoRun, "fork");
+		
+		return childProcessID;
+	}
+	/**
 	 * Invoke VoidFunctionPtr.call, allowing caller and callee to execute
 	 * concurrently.
 	 *
@@ -272,6 +294,7 @@ public class NachosProcess implements Runnable {
 		mThread = new Thread(this);
 
 		// ReadyToRun assumes that interrupts are disabled!
+		Machine.hmForAllProcess.put(this.getProcessID(), this);
 		Scheduler.readyToRun(this);
 
 		// return interrupts to their pre-call levels
@@ -297,8 +320,10 @@ public class NachosProcess implements Runnable {
 
 		Debug.print('t', "Finishing Process " + getName());
 
+		Machine.hmForAllProcess.remove(this.getProcessID());
 		// Mark this process as to be destroyed
 		JNachos.setProcessToBeDestroyed(this);
+		
 		/*NachosProcess processSleeping = JNachos.getCurrentProcess().getWaitingProcess();
 		if( processSleeping != null){
 			
@@ -451,6 +476,7 @@ public class NachosProcess implements Runnable {
 
 		// Set the status for this process to blocked
 		mStatus = ProcessStatus.BLOCKED;
+		Machine.hmForAllProcess.put(JNachos.getCurrentProcess().getProcessID(), JNachos.getCurrentProcess());
 
 		// no one to run, wait for an interrupt
 		while ((nextProcess = Scheduler.findNextToRun()) == null) {

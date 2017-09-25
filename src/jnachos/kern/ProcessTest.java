@@ -23,7 +23,7 @@ public class ProcessTest implements VoidFunctionPtr {
 		// which is the processes local id
 		
 		//System.out.println(JNachos.getCurrentProcess().getProcessID());
-		/*if(pArg == "fork"){
+		if(pArg == "fork"){
 			NachosProcess tmp = JNachos.getCurrentProcess();
 			new AddrSpace(JNachos.getCurrentProcess().getSpace());
 			JNachos.getCurrentProcess().restoreUserState();
