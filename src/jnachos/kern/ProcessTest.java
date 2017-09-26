@@ -20,28 +20,22 @@ public class ProcessTest implements VoidFunctionPtr {
 	 *            is an Integer with an id.
 	 */
 	public void call(Object pArg) {
-		// which is the processes local id
 		
-		//System.out.println(JNachos.getCurrentProcess().getProcessID());
+		
+		
 		if(pArg == "fork"){
-			NachosProcess tmp = JNachos.getCurrentProcess();
-			new AddrSpace(JNachos.getCurrentProcess().getSpace());
+			
 			JNachos.getCurrentProcess().restoreUserState();
-			//System.out.println("Join process with ID "+Machine.mRegisters[4]);
+			JNachos.getCurrentProcess().getSpace().restoreState();
+			
 			Machine.run();
 		
 			
-		}/*else if(pArg == "parentRun"){
-			new AddrSpace(JNachos.getCurrentProcess().getSpace());
-			JNachos.getCurrentProcess().restoreUserState();
-			int temp = Machine.readRegister(4);
-			Machine.run();
 		}
-		else{*/
 			String fileName = ((String) pArg).toString();
 			JNachos.startProcess(fileName);
 			
-		//}
+		
 		
 			
 		
@@ -59,33 +53,12 @@ public class ProcessTest implements VoidFunctionPtr {
 		Debug.print('t', "Entering SimpleTest");
 		String[] twoFilePath = fileNames.split(",");
 		for(int j = 0;j<twoFilePath.length;j++){
-			//System.out.println(twoFilePath[j]+twoFilePath.length);
+			
 			NachosProcess p = new NachosProcess("forked process" + j);
 			
 			p.fork(this, twoFilePath[j]);
 		}
 		
 	}
-	/*public int putInNewThread(){
-		int childProcessID;
-		NachosProcess childProcess = new NachosProcess("Creating child process");
-		childProcessID = childProcess.getProcessID();
-		childProcess.setSpace(JNachos.getCurrentProcess().getSpace());
-		//Machine.mRegisters[Machine.PCReg] =  Machine.mRegisters[Machine.PCReg] + 4;
-		Machine.increaseTheProgramCounter();
-		
-		
-		//Machine.mRegisters[Machine.NextPCReg] =  Machine.mRegisters[Machine.PCReg] + 4;
-		//Machine.mRegisters[2] = 0;
-		childProcess.saveUserState();
-		childProcess.setSpecificRegister(2, 0);
-		
-		//childProcess.se
-		childProcess.fork(this, "fork");
-		return childProcessID;
-	}
-	public void runParent(NachosProcess parent){
-		parent.runTheResumedProcess(this, "parentRun");
-		
-	}*/
+	
 }

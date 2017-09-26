@@ -71,7 +71,7 @@ public class NachosProcess implements Runnable {
 	/**
 	 * Single counter to implement unique process ID
 	 */
-	public static int counter = 85;
+	public static int counter = 0;
 	/**
 	 * unique number associated with each process
 	 */
@@ -211,44 +211,7 @@ public class NachosProcess implements Runnable {
 
 		}
 	}
-/*	public int JoinProcess(int pid){
-		 LinkedList<NachosProcess> allProcess = Scheduler.getreadyList();
-		 int temp = Machine.mRegisters[Machine.PCReg];
-		 
-		 
-		 for(NachosProcess oneProcess : allProcess){
-			 if(pid == oneProcess.getProcessID()){
-				 Machine.increaseTheProgramCounter();
-				 
-				 System.out.println("Process is present in readyList---> pid ="+ pid);
-				 
-				 System.out.println(mSpace);
-				JNachos.getCurrentProcess().saveUserState();
-				NachosProcess te = JNachos.getCurrentProcess();
-				 te.getSpace().saveState();
-				 //JNachos.getCurrentProcess().mSpace = JNachos.getCurrentProcess().getSpace();
-				
-				 
-				 oneProcess.setWaitingProcess(JNachos.getCurrentProcess());				 
-				 return 0;
-				
-			 }
-		 }
-		 Machine.increaseTheProgramCounter();
-		
-		 System.out.println("Process is not present in readyList--- > pid = "+pid);
-		 return -1;
-		
-	}
-	public int Fork(){
-		
-		int childProcessID;
-		ProcessTest temp = new ProcessTest();
-		childProcessID = temp.putInNewThread();
-		
-		return childProcessID;
-	}
-*/
+
 	/**
 	 * Creates a new process,
 	 * Copies the Registers
@@ -260,7 +223,7 @@ public class NachosProcess implements Runnable {
 		NachosProcess newChildProcess = new NachosProcess("Creating new child");
 		childProcessID = newChildProcess.getProcessID();
 		ProcessTest createInstancetoRun = new ProcessTest();		
-		newChildProcess.mSpace  = this.getSpace();
+		newChildProcess.mSpace  = new AddrSpace(this.getSpace()); ///
 		newChildProcess.saveUserState();
 		newChildProcess.setSpecificRegister(2, 0);
 		newChildProcess.fork(createInstancetoRun, "fork");
@@ -327,85 +290,14 @@ public class NachosProcess implements Runnable {
 		// Mark this process as to be destroyed
 		JNachos.setProcessToBeDestroyed(this);
 		
-		/*NachosProcess processSleeping = JNachos.getCurrentProcess().getWaitingProcess();
-		if( processSleeping != null){
-			
-			
-			
-			
-			
-			JNachos.getCurrentProcess().setWaitingProcess(null);
-			
-			//ProcessTest temp = new ProcessTest();
-			//temp.runParent(processSleeping);
-			
-			//processSleeping.setSpecificRegister(4, Machine.readRegister(4));
-			//int temp = Machine.readRegister(4);
-			Scheduler.readyToRun(processSleeping);
-			JNachos.setProcessToBeDestroyed(this);
-			//JNachos.getCurrentProcess().switchProcess(processSleeping);
-			
-			// switch to the next process
-			/*JNachos.setCurrentProcess(processSleeping);
-
-			// nextProcess is now running
-			processSleeping.setStatus(ProcessStatus.RUNNING);
-			
-			new AddrSpace(processSleeping.getSpace());
-			processSleeping.restoreUserState();
-
-			Debug.print('t', "Switching from process " + JNachos.getCurrentProcess().getName() + " to process " + processSleeping.getName());
-
-			// Resume the other process
-			processSleeping.resume();
-			
-			
-			
-			//processSleeping.putIntoMachine();
-			
-			
-			
-			
-			
-			
-			
-			//int r2 = Machine.mRegisters[2];
-			//JNachos.getCurrentProcess().switchProcess(processSleeping);
-			
-			//switchProcess(processSleeping);
-			//Machine.mRegisters[Machine.PCReg] =  Machine.mRegisters[Machine.PCReg] + 4;
-			//Machine.run();
-			
-			
-		}else{
-			JNachos.setProcessToBeDestroyed(this);
-		}
-		*/
+		
 
 		// Put ourself ot sleep
 		sleep();
 	}
 
 
-	/*public void runTheResumedProcess(VoidFunctionPtr pFunc, Object pArg) {
-		Debug.print('t', "Forking Process " + mName + "with func = " + pFunc + ", arg = " + pArg);
 
-		// Capture the current state of the interrupts
-		boolean oldLevel = Interrupt.setLevel(false);
-
-		// save the parameters in this process object
-		myFunc = pFunc;
-		myArg = pArg;
-
-		// Create a new thread for this process
-		//mThread = new Thread(this);
-
-		// ReadyToRun assumes that interrupts are disabled!
-		Scheduler.readyToRun(this);
-
-		// return interrupts to their pre-call levels
-		Interrupt.setLevel(oldLevel);
-	}*/
 	/**
 	 * Relinquish the CPU if any other Process is ready to run. If so, put the
 	 * Process on the end of the ready list, so that it will eventually be
@@ -507,6 +399,7 @@ public class NachosProcess implements Runnable {
 	 **/
 	public synchronized void switchProcess(NachosProcess pNextProcess) {
 		// Get the current process
+
 		NachosProcess oldProcess = JNachos.getCurrentProcess();
 
 		if (oldProcess == pNextProcess)
@@ -521,7 +414,7 @@ public class NachosProcess implements Runnable {
 			oldProcess.getSpace().saveState();
 		}
 
-		pNextProcess = Machine.hmForAllProcess.get(pNextProcess.getProcessID());
+		
 		// switch to the next process
 		JNachos.setCurrentProcess(pNextProcess);
 
@@ -536,9 +429,11 @@ public class NachosProcess implements Runnable {
 		// Resume the other process
 		pNextProcess.resume();
 
+	
 		// Stop the current process
 		oldProcess.suspend();
 
+	
 		Debug.print('t', "Now in process " + pNextProcess.getName());
 
 		// If the old process gave up the processor because it was finishing,
@@ -549,13 +444,10 @@ public class NachosProcess implements Runnable {
 			JNachos.getProcessToBeDestroyed().kill();
 			JNachos.setProcessToBeDestroyed(null);
 		}
-		//Machine.mMainMemory[908] = byte(303);
+	
 
 	
-		/*if (pNextProcess.getSpace() != null) {
-			pNextProcess.restoreUserState();
-			pNextProcess.getSpace().restoreState();
-		}*/
+		
 		if (oldProcess.getSpace() != null) {
 			oldProcess.restoreUserState();
 			oldProcess.getSpace().restoreState();

@@ -72,6 +72,7 @@ public class SystemCallHandler {
 	 **/
 	public static void handleSystemCall(int pWhichSysCall) {
 
+		System.out.println("Process ID : "+JNachos.getCurrentProcess().getProcessID()+" System call : " + pWhichSysCall +"\n");
 		Debug.print('a', "!!!!" + Machine.read1 + "," + Machine.read2 + "," + Machine.read4 + "," + Machine.write1 + ","
 				+ Machine.write2 + "," + Machine.write4);
 
@@ -100,10 +101,11 @@ public class SystemCallHandler {
 			if( processWaiting != null){
 				
 				NachosProcess processSleeping = Machine.hmForAllProcess.get(processWaiting.getProcessID());
+				
 				JNachos.getCurrentProcess().setWaitingProcess(null);				
 				processSleeping.setSpecificRegister(2, arg);
 				
-				new AddrSpace(processSleeping.getSpace());
+				
 				Scheduler.readyToRun(processSleeping);
 				 
 				JNachos.getCurrentProcess().finish();
@@ -122,7 +124,7 @@ public class SystemCallHandler {
 			// Forking new process
 			int returnValue = JNachos.getCurrentProcess().fork_System_Call();
 			Machine.writeRegister(2, returnValue);
-			JNachos.getCurrentProcess().saveUserState();
+			
 			Machine.hmForAllProcess.put(JNachos.getCurrentProcess().getProcessID(), JNachos.getCurrentProcess());
 			break;
 			
@@ -130,8 +132,9 @@ public class SystemCallHandler {
 		case SC_Exec:
 			Debug.print('a', "Execute the program");
 			
-			System.out.println("Arguments Passed are "+Machine.mRegisters[2]+ " "+Machine.mRegisters[4]+" "+Machine.mRegisters[5]+" "+Machine.mRegisters[6]+" "+Machine.mRegisters[7] );
+			//System.out.println("Arguments Passed are "+Machine.mRegisters[2]+ " "+Machine.mRegisters[4]+" "+Machine.mRegisters[5]+" "+Machine.mRegisters[6]+" "+Machine.mRegisters[7] );
  		
+			//pointer to the starting of the file name
  			int offset = Machine.readRegister(4);
  			
  			ArrayList<Character> sample = new ArrayList<Character>();
@@ -147,6 +150,7 @@ public class SystemCallHandler {
  				fileName = fileName+each;
  			}
  			System.out.println("Executing file : " + fileName);
+ 			//Opens the files copies address space and executes
  			JNachos.startExecuting(fileName);
  		
 			System.out.println("Execute ");
@@ -155,99 +159,22 @@ public class SystemCallHandler {
 		case SC_Join:
 		
 			
-			
-			//System.out.println("Arguments Passed are "+Machine.mRegisters[2]+ " "+Machine.mRegisters[4]+" "+Machine.mRegisters[5]+" "+Machine.mRegisters[6]+" "+Machine.mRegisters[7] );
 			int processToJoin = Machine.readRegister(4);
 			if(JNachos.getCurrentProcess().getProcessID() == processToJoin || !Machine.hmForAllProcess.containsKey(processToJoin)){
 				break;
 			}else
 				{
 					NachosProcess processToBeJoined = Machine.hmForAllProcess.get(processToJoin);
-					//JNachos.getCurrentProcess().saveUserState();//take out this
+					
+					JNachos.getCurrentProcess().saveUserState();//take out this
 					processToBeJoined.setWaitingProcess(JNachos.getCurrentProcess());
 					JNachos.getCurrentProcess().sleep();
 					
 				}
-			break;
 			// Finish the invoking process
-		/*	NachosProcess processSleeping = JNachos.getCurrentProcess().getWaitingProcess();
-			if( processSleeping != null){
-				
-				JNachos.getCurrentProcess().setWaitingProcess(null);
-				processSleeping.setSpecificRegister(2, arg);
-				//new AddrSpace(processSleeping.getSpace());
-				//Scheduler.readyToRun(processSleeping);
-				//JNachos.setProcessToBeDestroyed(this);
-				Scheduler.readyToRun(processSleeping);
-				new AddrSpace(processSleeping.getSpace());
-				processSleeping.restoreUserState();
-				//Machine.run();
-				//NachosProcess temp = JNachos.getCurrentProcess();
-				JNachos.getCurrentProcess().finish();
-				
-				//Machine.mRegisters[Machine.PCReg] =  Machine.mRegisters[Machine.PCReg] + 4;
-				//Machine.run();
-				
-				
-			}else{
-				JNachos.getCurrentProcess().finish();
-			}
-			
-			//JNachos.getCurrentProcess().finish();
-			
 			break;
 			
-		case SC_Fork:
-			//System.out.println("Arguments Passed are "+Machine.mRegisters[2]+ " "+Machine.mRegisters[4]+" "+Machine.mRegisters[5]+" "+Machine.mRegisters[6]+" "+Machine.mRegisters[7] );
-			Debug.print('a', "Create new process.");
-			// create a new child
-			int returnValue = JNachos.getCurrentProcess().Fork();
-			Machine.writeRegister(2, returnValue);
-			//Machine.increaseTheProgramCounter();
-			//System.out.println("Join process with ID "+Machine.mRegisters[4]);
-			JNachos.getCurrentProcess().saveUserState();
-			break;
-		case SC_Join:
-			Debug.print('a', "Join");
-			//JNachos.getCurrentProcess().restoreUserState();
-			System.out.println("Join process with ID "+Machine.mRegisters[4]);
-			// Machine.mRegisters[Machine.PCReg] =  Machine.mRegisters[Machine.PCReg] + 4;
-			//System.out.println("Arguments Passed are "+Machine.mRegisters[2]+ " "+Machine.mRegisters[4]+" "+Machine.mRegisters[5]+" "+Machine.mRegisters[6]+" "+Machine.mRegisters[7] );
-			int returns = JNachos.getCurrentProcess().JoinProcess(Machine.readRegister(4));
-			//Machine.mRegisters[Machine.PCReg] =  Machine.mRegisters[Machine.PCReg] + 4;
-			//Machine.mRegisters[2] = returns;
-			
-			if(returns == 0){
-				JNachos.getCurrentProcess().sleep();
-			}			
-			break;
 		
-		case SC_Exec:
-			Debug.print('a', "Execute the program");
-			NachosProcess something = JNachos.getCurrentProcess();
-			//something.restoreUserState();
-			System.out.println("Arguments Passed are "+Machine.mRegisters[2]+ " "+Machine.mRegisters[4]+" "+Machine.mRegisters[5]+" "+Machine.mRegisters[6]+" "+Machine.mRegisters[7] );
- 			//int temp =  Machine.mRegisters[Machine.PCReg] + 4;
- 			int offset = Machine.readRegister(4);
- 			
- 			ArrayList<Character> sample = new ArrayList<Character>();
- 			while(Machine.mMainMemory[offset] != '\0'){
- 				
- 				sample.add((char)Machine.mMainMemory[offset]);
- 				
- 				offset = offset + 1;
- 			}
- 			
- 			String fileName = new String();
- 			for(char each : sample){
- 				fileName = fileName+each;
- 			}
- 			System.out.println("Executing file : " + fileName);
- 			JNachos.startExecuting(fileName);
- 			Machine.increaseTheProgramCounter();
-			System.out.println("Execute ");
-			break;
-*/
 		default:
 			Interrupt.halt();
 			break;
