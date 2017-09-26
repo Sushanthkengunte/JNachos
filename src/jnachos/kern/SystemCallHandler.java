@@ -102,7 +102,7 @@ public class SystemCallHandler {
 				NachosProcess processSleeping = Machine.hmForAllProcess.get(processWaiting.getProcessID());
 				JNachos.getCurrentProcess().setWaitingProcess(null);				
 				processSleeping.setSpecificRegister(2, arg);
-				Machine.dumpState();
+				
 				new AddrSpace(processSleeping.getSpace());
 				Scheduler.readyToRun(processSleeping);
 				 
@@ -153,20 +153,10 @@ public class SystemCallHandler {
 			break;
 
 		case SC_Join:
-			
-			try{
-			    PrintWriter writer = new PrintWriter("../../outputOfJna.txt", "UTF-8");
-			    for (int i = 0; i < Machine.MemorySize ; i++) {
-			    	writer.println("Index" +i+"  value is " + Machine.mMainMemory [i] + "\n" );
-				}
-			   
-			    writer.close();
-			} catch (IOException e) {
-			   // do something
-			}
+		
 			
 			
-			System.out.println("Arguments Passed are "+Machine.mRegisters[2]+ " "+Machine.mRegisters[4]+" "+Machine.mRegisters[5]+" "+Machine.mRegisters[6]+" "+Machine.mRegisters[7] );
+			//System.out.println("Arguments Passed are "+Machine.mRegisters[2]+ " "+Machine.mRegisters[4]+" "+Machine.mRegisters[5]+" "+Machine.mRegisters[6]+" "+Machine.mRegisters[7] );
 			int processToJoin = Machine.readRegister(4);
 			if(JNachos.getCurrentProcess().getProcessID() == processToJoin || !Machine.hmForAllProcess.containsKey(processToJoin)){
 				break;
