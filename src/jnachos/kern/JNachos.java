@@ -307,7 +307,7 @@ public abstract class JNachos {
 		space.initRegisters();
 
 		// load page table register
-		//space.restoreState();
+		space.restoreState();
 		
 	}
 	/**

@@ -71,7 +71,7 @@ public class NachosProcess implements Runnable {
 	/**
 	 * Single counter to implement unique process ID
 	 */
-	public static int counter = 0;
+	public static int counter = 85;
 	/**
 	 * unique number associated with each process
 	 */
@@ -162,6 +162,8 @@ public class NachosProcess implements Runnable {
 	 **/
 	public synchronized void resume() {
 		// If this process has already begun, simply resume it
+		
+		
 		if (mStarted) {
 			this.notify();
 		} else {
@@ -257,11 +259,12 @@ public class NachosProcess implements Runnable {
 		int childProcessID = 0;
 		NachosProcess newChildProcess = new NachosProcess("Creating new child");
 		childProcessID = newChildProcess.getProcessID();
-		ProcessTest createInstancetoRun = new ProcessTest();
-		newChildProcess.setSpace(JNachos.getCurrentProcess().getSpace());
-		newChildProcess.setSpecificRegister(2, 0);
+		ProcessTest createInstancetoRun = new ProcessTest();		
+		newChildProcess.mSpace  = this.getSpace();
 		newChildProcess.saveUserState();
+		newChildProcess.setSpecificRegister(2, 0);
 		newChildProcess.fork(createInstancetoRun, "fork");
+		Machine.hmForAllProcess.put(childProcessID, newChildProcess);
 		
 		return childProcessID;
 	}
@@ -433,10 +436,12 @@ public class NachosProcess implements Runnable {
 		// Find the next process to run
 		nextProcess = Scheduler.findNextToRun();
 
+		
 		// If there is a process
 		if (nextProcess != null) {
 			// Mark this process as ready
 			Scheduler.readyToRun(this);
+			nextProcess = Machine.hmForAllProcess.get(nextProcess.getProcessID());
 
 			// Run the other process
 			JNachos.getCurrentProcess().switchProcess(nextProcess);
@@ -483,6 +488,7 @@ public class NachosProcess implements Runnable {
 			Interrupt.idle();
 		}
 
+		nextProcess = Machine.hmForAllProcess.get(nextProcess.getProcessID());
 		// returns when we've been signalled
 		JNachos.getCurrentProcess().switchProcess(nextProcess);
 	}
@@ -515,6 +521,7 @@ public class NachosProcess implements Runnable {
 			oldProcess.getSpace().saveState();
 		}
 
+		pNextProcess = Machine.hmForAllProcess.get(pNextProcess.getProcessID());
 		// switch to the next process
 		JNachos.setCurrentProcess(pNextProcess);
 
@@ -542,7 +549,13 @@ public class NachosProcess implements Runnable {
 			JNachos.getProcessToBeDestroyed().kill();
 			JNachos.setProcessToBeDestroyed(null);
 		}
+		//Machine.mMainMemory[908] = byte(303);
 
+	
+		/*if (pNextProcess.getSpace() != null) {
+			pNextProcess.restoreUserState();
+			pNextProcess.getSpace().restoreState();
+		}*/
 		if (oldProcess.getSpace() != null) {
 			oldProcess.restoreUserState();
 			oldProcess.getSpace().restoreState();
@@ -572,7 +585,7 @@ public class NachosProcess implements Runnable {
 	 * set specific mUserResgister to some values
 	 */
 	public void setSpecificRegister(int reg, int value){
-		mUserRegisters[reg] = value;
+		this.mUserRegisters[reg] = value;
 	}
 	/**
 	 * 

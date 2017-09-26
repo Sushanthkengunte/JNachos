@@ -7,6 +7,8 @@
  */
 package jnachos.kern;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,7 +93,29 @@ public class SystemCallHandler {
 			System.out
 					.println("Current Process " + JNachos.getCurrentProcess().getName() + " exiting with code " + arg);
 			
-			JNachos.getCurrentProcess().finish();
+			//JNachos.getCurrentProcess().finish();
+			
+			NachosProcess processWaiting = JNachos.getCurrentProcess().getWaitingProcess();
+			
+			if( processWaiting != null){
+				
+				NachosProcess processSleeping = Machine.hmForAllProcess.get(processWaiting.getProcessID());
+				JNachos.getCurrentProcess().setWaitingProcess(null);				
+				processSleeping.setSpecificRegister(2, arg);
+				Machine.dumpState();
+				new AddrSpace(processSleeping.getSpace());
+				Scheduler.readyToRun(processSleeping);
+				 
+				JNachos.getCurrentProcess().finish();
+				
+				
+				
+			}else{
+				JNachos.getCurrentProcess().finish();
+			}
+			
+			
+			
 			break;
 		case SC_Fork:
 			Debug.print('a', "Create new process.");
@@ -99,6 +123,7 @@ public class SystemCallHandler {
 			int returnValue = JNachos.getCurrentProcess().fork_System_Call();
 			Machine.writeRegister(2, returnValue);
 			JNachos.getCurrentProcess().saveUserState();
+			Machine.hmForAllProcess.put(JNachos.getCurrentProcess().getProcessID(), JNachos.getCurrentProcess());
 			break;
 			
 			
@@ -128,10 +153,31 @@ public class SystemCallHandler {
 			break;
 
 		case SC_Join:
-			for(int temp : Machine.hmForAllProcess.keySet()){
-				int x = Machine.hmForAllProcess.get(temp).getProcessID();
-				System.out.println(x);
+			
+			try{
+			    PrintWriter writer = new PrintWriter("../../outputOfJna.txt", "UTF-8");
+			    for (int i = 0; i < Machine.MemorySize ; i++) {
+			    	writer.println("Index" +i+"  value is " + Machine.mMainMemory [i] + "\n" );
+				}
+			   
+			    writer.close();
+			} catch (IOException e) {
+			   // do something
 			}
+			
+			
+			System.out.println("Arguments Passed are "+Machine.mRegisters[2]+ " "+Machine.mRegisters[4]+" "+Machine.mRegisters[5]+" "+Machine.mRegisters[6]+" "+Machine.mRegisters[7] );
+			int processToJoin = Machine.readRegister(4);
+			if(JNachos.getCurrentProcess().getProcessID() == processToJoin || !Machine.hmForAllProcess.containsKey(processToJoin)){
+				break;
+			}else
+				{
+					NachosProcess processToBeJoined = Machine.hmForAllProcess.get(processToJoin);
+					//JNachos.getCurrentProcess().saveUserState();//take out this
+					processToBeJoined.setWaitingProcess(JNachos.getCurrentProcess());
+					JNachos.getCurrentProcess().sleep();
+					
+				}
 			break;
 			// Finish the invoking process
 		/*	NachosProcess processSleeping = JNachos.getCurrentProcess().getWaitingProcess();
