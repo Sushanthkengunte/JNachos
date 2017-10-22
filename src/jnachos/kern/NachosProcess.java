@@ -112,7 +112,7 @@ public class NachosProcess implements Runnable {
 		mSpace = null;
 		mStarted = false;
 
-		mUserRegisters = new int[Machine.NumTotalRegs];
+		mUserRegisters = new int[Machine.NumTotalRegs];	
 		
 		//give a unique ID to the process
 		counter++;
@@ -223,7 +223,7 @@ public class NachosProcess implements Runnable {
 		NachosProcess newChildProcess = new NachosProcess("Creating new child");
 		childProcessID = newChildProcess.getProcessID();
 		ProcessTest createInstancetoRun = new ProcessTest();		
-		newChildProcess.mSpace  = new AddrSpace(this.getSpace()); ///
+		newChildProcess.mSpace  = new AddrSpace(this.getSpace()); 
 		newChildProcess.saveUserState();
 		newChildProcess.setSpecificRegister(2, 0);
 		newChildProcess.fork(createInstancetoRun, "fork");

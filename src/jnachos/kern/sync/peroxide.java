@@ -1,28 +1,33 @@
 /**
- *  <MakeWater Problem>
- *  Author: Jae C. Oh
- *  
- *  Created by Patrick McSweeney on 12/17/08.
+ * 
  */
 package jnachos.kern.sync;
 
-import java.io.*;
-import jnachos.kern.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+import jnachos.kern.JNachos;
+import jnachos.kern.NachosProcess;
+import jnachos.kern.VoidFunctionPtr;
+import jnachos.kern.sync.Water.HAtom;
+import jnachos.kern.sync.Water.OAtom;
 
 /**
+ * @author sushanth
  *
  */
-public class Water {
-
+public class peroxide {
 	/** Semaphore H */
 	static Semaphore H = new Semaphore("SemH", 0);
 
-	
 	/**	*/
 	static Semaphore O = new Semaphore("SemO", 0);
+	static Semaphore hydrogenFinished = new Semaphore("FinishedHydrogen", 0);
 
 	/**	*/
 	static Semaphore wait = new Semaphore("wait", 0);
+	
+	static Semaphore waitO = new Semaphore("wait", 0);
 
 	/**	*/
 	static Semaphore mutex = new Semaphore("MUTEX", 1);
@@ -30,8 +35,12 @@ public class Water {
 	/**	*/
 	static Semaphore mutex1 = new Semaphore("MUTEX1", 1);
 
+	/** */
+	static Semaphore mutex2 = new Semaphore("MUTEX2", 1);
 	/**	*/
-	static long count = 0;
+	static long countH = 0;
+	
+	static long countO = 0;
 
 	/**	*/
 	static int Hcount, Ocount, nH, nO;
@@ -53,17 +62,18 @@ public class Water {
 		 */
 		public void call(Object pDummy) {
 			mutex.P();
-			if (count % 2 == 0) // first H atom
+			if (countH % 2 == 0) // first H atom
 			{
-				count++; // increment counter for the first H
+				countH++; // increment counter for the first H
 				mutex.V(); // Critical section ended
 				H.P(); // Waiting for the second H atom
 			} else // second H atom
 			{
-				count++; // increment count for next first H
+				countH++; // increment count for next first H
 				mutex.V(); // Critical section ended
 				H.V(); // wake up the first H atom
-				O.V(); // wake up O atom
+				//O.V(); // wake up O atom
+				hydrogenFinished.V();
 			}
 
 			wait.P(); // wait for water message done
@@ -89,18 +99,38 @@ public class Water {
 		 * "Yielding" - preserving resource
 		 */
 		public void call(Object pDummy) {
-
-			O.P(); // waiting for two H atoms.
-			makeWater();
-			wait.V(); // wake up H atoms and they will return to
-			wait.V(); // resource pool
+			
+			
+			
 			mutex1.P();
-			Hcount = Hcount - 2;
-			Ocount--;
-			System.out.println("Numbers Left: H Atoms: " + Hcount + ", O Atoms: " + Ocount);
-			System.out.println("Numbers Used: H Atoms: " + (nH - Hcount) + ", O Atoms: " + (nO - Ocount));
-			mutex1.V();
-			System.out.println("O atom #" + mID + " used in making water.");
+			if (countO % 2 == 0) // first H atom
+			{
+				countO++; // increment counter for the first O
+				mutex1.V(); // Critical section ended
+				O.P(); // Waiting for the second O atom
+			} else // second O atom
+			{
+				hydrogenFinished.P();
+				countO++; // increment count for next first O
+				mutex1.V(); // Critical section ended
+				O.V(); // wake up the first O atom
+				//H.V(); // wake up O atom
+				makePeroxide();
+				wait.V(); // wake up H atoms and they will return to
+				wait.V();
+				
+				mutex2.P();
+				Hcount = Hcount - 2;
+				Ocount = Ocount - 2;
+				System.out.println("Numbers Left: H Atoms: " + Hcount + ", O Atoms: " + Ocount);
+				System.out.println("Numbers Used: H Atoms: " + (nH - Hcount) + ", O Atoms: " + (nO - Ocount));
+				
+				mutex2.V();
+				
+			}
+			//waitO.P();
+			System.out.println("O atom #" + mID + " used in making peroxide.");
+
 		}
 	}
 
@@ -108,22 +138,22 @@ public class Water {
 	 * oAtom will call oReady. When this atom is used, do continuous "Yielding"
 	 * - preserving resource
 	 */
-	public static void makeWater() {
-		System.out.println("** Water made! Splash!! **");
+	public static void makePeroxide() {
+		System.out.println("** peroxide made!! **");
 	}
 
 	/**
 	 * oAtom will call oReady. When this atom is used, do continuous "Yielding"
 	 * - preserving resource
 	 */
-	public Water() {
-		runWater();
+	public peroxide() {
+		runPeroxide();
 	}
 
 	/**
 	 *
 	 */
-	public void runWater() {
+	public void runPeroxide() {
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 			System.out.println("Number of H atoms ? ");
@@ -147,4 +177,5 @@ public class Water {
 			(new NachosProcess(new String("oAtom" + j))).fork(atom, null);
 		}
 	}
+
 }

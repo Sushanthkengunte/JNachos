@@ -158,7 +158,6 @@ public class SystemCallHandler {
 
 		case SC_Join:
 		
-			
 			int processToJoin = Machine.readRegister(4);
 			if(JNachos.getCurrentProcess().getProcessID() == processToJoin || !Machine.hmForAllProcess.containsKey(processToJoin)){
 				break;
@@ -166,7 +165,7 @@ public class SystemCallHandler {
 				{
 					NachosProcess processToBeJoined = Machine.hmForAllProcess.get(processToJoin);
 					
-					JNachos.getCurrentProcess().saveUserState();//take out this
+					//JNachos.getCurrentProcess().saveUserState();
 					processToBeJoined.setWaitingProcess(JNachos.getCurrentProcess());
 					JNachos.getCurrentProcess().sleep();
 					

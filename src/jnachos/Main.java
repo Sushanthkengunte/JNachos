@@ -60,6 +60,7 @@ package jnachos;
 
 import jnachos.kern.*;
 import jnachos.kern.sync.Water;
+import jnachos.kern.sync.peroxide;
 import jnachos.filesystem.*;
 import jnachos.machine.*;
 
@@ -106,6 +107,7 @@ public class Main {
 		display();
 
 		//new Water();
+		new peroxide();
 		//new ProcessTest();
 
 		// The number arguments

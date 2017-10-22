@@ -214,8 +214,6 @@ public class AddrSpace {
 	 **/
 	public void saveState() {
 		
-		//this.mPageTable = MMU.mPageTable;
-		//this.mNumPages = MMU.mPageTableSize;
 		
 
 	}
