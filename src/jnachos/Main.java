@@ -107,7 +107,7 @@ public class Main {
 		display();
 
 		//new Water();
-		new peroxide();
+		//new peroxide();
 		//new ProcessTest();
 
 		// The number arguments

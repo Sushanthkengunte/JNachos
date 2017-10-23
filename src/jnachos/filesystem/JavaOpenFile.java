@@ -20,6 +20,18 @@ public class JavaOpenFile implements OpenFile {
 
 	/** The current position within the file. */
 	private int currentOffset;
+	
+	public  JavaOpenFile() {
+		
+	}
+
+	public void setmFile(int mFile) {
+		this.mFile = mFile;
+	}
+
+	public void setCurrentOffset(int currentOffset) {
+		this.currentOffset = currentOffset;
+	}
 
 	/**
 	 * 

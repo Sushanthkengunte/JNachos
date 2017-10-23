@@ -31,7 +31,7 @@ public class Machine {
 
 	// Set the page size equal to the disk sector size, for simplicity
 	public static final int PageSize = 128;
-	public static final int NumPhysPages = 1024;
+	public static final int NumPhysPages = 110;
 	public static final int MemorySize = (NumPhysPages * PageSize);
 	public static final int TLBSize = 4; // if there is a TLB, make it small
 
@@ -74,7 +74,9 @@ public class Machine {
 	/**
 	 * Contains all the processes
 	 */
-	public static  HashMap<Integer,NachosProcess> hmForAllProcess=new HashMap<Integer,NachosProcess>();  
+	public static  HashMap<Integer,NachosProcess> hmForAllProcess=new HashMap<Integer,NachosProcess>();
+	
+	public static  HashMap<Integer,SwapSpace> swapSpaceMap=new HashMap<Integer,SwapSpace>();
 
 	/**
 	 * The hardware timer. This class can throw interrupts at scheduable
@@ -228,7 +230,12 @@ public class Machine {
 		exception = MMU.translate(addr, physicalAddress, size, false);
 
 		if (exception != ExceptionType.NoException) {
-			raiseException(ExceptionType.AddressErrorException, addr);
+			if(exception == ExceptionType.PageFaultException){
+				raiseException(ExceptionType.PageFaultException, addr);
+			}else{
+				raiseException(ExceptionType.AddressErrorException, addr);
+			}
+			
 			return null;
 		}
 
@@ -299,6 +306,7 @@ public class Machine {
 		exception = MMU.translate(addr, physicalAddress, size, true);
 
 		if (exception != ExceptionType.NoException) {
+			
 			Machine.raiseException(ExceptionType.AddressErrorException, addr);
 			return false;
 		}

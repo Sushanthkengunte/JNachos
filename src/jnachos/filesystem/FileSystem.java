@@ -25,6 +25,12 @@ public interface FileSystem {
 	 * @return true if successful, false otherwise
 	 */
 	public boolean create(String pFileName, int pInitialSize);
+	
+	
+	/**
+	 * create the specified file and return file descriptor
+	 */
+	public int create_FD(String pName, int initialSize);
 
 	/**
 	 * 

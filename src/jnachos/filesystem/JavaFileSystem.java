@@ -45,6 +45,29 @@ public class JavaFileSystem implements FileSystem {
 		JavaSys.close(fileDescriptor);
 		return true;
 	}
+	
+	public int temp(){
+		return -1;
+	}
+	
+	/**
+	 * Creates the file specified.
+	 * 
+	 * @param pName
+	 *            the name of the file.
+	 * @param initialSize
+	 *            the initial size of the file.
+	 */
+	public int create_FD(String pName, int initialSize) {
+		int fileDescriptor = JavaSys.openForWrite(pName);
+
+		if (fileDescriptor == -1) {
+			return -1;
+		}
+
+		JavaSys.close(fileDescriptor);
+		return fileDescriptor;
+	}
 
 	/**
 	 * 

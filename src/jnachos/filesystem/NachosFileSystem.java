@@ -328,4 +328,10 @@ public class NachosFileSystem implements FileSystem {
 		freeMap.delete();
 		directory.delete();
 	}
+
+	@Override
+	public int create_FD(String pName, int initialSize) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

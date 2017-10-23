@@ -8,6 +8,8 @@
  */
 package jnachos.kern;
 
+import javax.crypto.Mac;
+
 import jnachos.machine.*;
 
 /**
@@ -28,12 +30,39 @@ public abstract class ExceptionHandler {
 		switch (pException) {
 		// If this type was a system call
 		case SyscallException:
-
 			// Get what type of system call was made
 			int type = Machine.readRegister(2);
-
 			// Invoke the System call handler
 			SystemCallHandler.handleSystemCall(type);
+			break;
+		case PageFaultException:
+			System.out.println("Page fault happened");
+			int pid = JNachos.getCurrentProcess().getProcessID();
+			SwapSpace temp = Machine.swapSpaceMap.get(pid);
+			int physicalPage = AddrSpace.mFreeMap.find();
+			int arg = Machine.readRegister(39);
+			int vpn = (int) arg/Machine.PageSize;
+			//System.out.println(temp.getSwapTable().get(vpn).physicalPage);
+			
+			if(physicalPage!=-1){
+				//if there is a free page in physical memory
+				int swapSpaceSeekValue = temp.getSwapTable().get(vpn).physicalPage;
+				
+				
+				
+			}else{
+				//if there is no free page in physical memory,implement page replacement algorithm
+			}
+			/*for(int k: temp.getSwapTable().keySet())
+			{
+				System.out.println(k);
+				System.out.println(temp.getSwapTable().get(k).physicalPage);
+			}*/
+				
+			
+			temp.pageRead();
+			
+			
 			break;
 
 		// All other exceptions shut down for now

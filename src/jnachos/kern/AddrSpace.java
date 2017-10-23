@@ -32,6 +32,8 @@ public class AddrSpace {
 	public static final int UserStackSize = 1024;
 
 	public static BitMap mFreeMap = new BitMap(Machine.NumPhysPages);
+	
+	public static SwapSpace swapArea;
 
 	/**
 	 * Do little endian to big endian conversion on the bytes in the object file
@@ -65,7 +67,7 @@ public class AddrSpace {
 	 * @param executable
 	 *            is the file containing the object code to load into memory
 	 **/
-	public AddrSpace(OpenFile executable) {
+	/*public AddrSpace(OpenFile executable) {
 		// Create buffer to hold onto the noff header
 		byte[] buffer = new byte[NoffHeader.size];
 
@@ -99,6 +101,7 @@ public class AddrSpace {
 		// check we're not trying to run anything too big --
 		// at least until we have virtual memory
 		assert (mNumPages <= Machine.NumPhysPages);
+		//Machine.raiseException(ExceptionType.PageFaultException,0)
 
 		Debug.print('a', "Initializing address space, num pages " + mNumPages + ", size " + size);
 
@@ -138,7 +141,106 @@ public class AddrSpace {
 			}
 		}
 	}
+*/
+	
+	public AddrSpace(OpenFile executable) {
+		// Create buffer to hold onto the noff header
+				byte[] buffer = new byte[NoffHeader.size];
 
+				// Read in the buffer
+				executable.readAt(buffer, NoffHeader.size, 0);
+
+				// Create a Noff Header with the data we read in
+				NoffHeader noffH = new NoffHeader(buffer);
+
+				// Check to see if the headers match
+				if ((noffH.noffMagic != NoffHeader.NOFFMAGIC)
+						&& (MipsSim.wordToHost(noffH.noffMagic) == NoffHeader.NOFFMAGIC)) {
+					// If so swap the headers
+					swapHeader(noffH);
+				}
+
+				// Make sure that the magic numbers match
+				assert (noffH.noffMagic == NoffHeader.NOFFMAGIC);
+
+				// how big is address space?
+				int size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize;
+
+				Debug.print('a', "File Size:" + size);
+
+				// Calculate the number of pages
+				mNumPages = (int) Math.ceil((double) size / (double) Machine.PageSize);
+
+				// Recalculate based on the number of pages
+				size = mNumPages * Machine.PageSize;
+
+				// check we're not trying to run anything too big --
+				// at least until we have virtual memory
+				assert (mNumPages <= Machine.NumPhysPages);
+				//Machine.raiseException(ExceptionType.PageFaultException,0)
+
+				Debug.print('a', "Initializing address space, num pages " + mNumPages + ", size " + size);
+
+				// first, set up the translation
+				mPageTable = new TranslationEntry[mNumPages];
+				swapArea = new SwapSpace(mNumPages);
+				swapArea.putAllPagesinFile(noffH,executable);
+				
+				Machine.swapSpaceMap.put(JNachos.getCurrentProcess().getProcessID(), swapArea);
+				
+				
+				
+				for (int i = 0; i < mNumPages; i++) {
+					if(i==0){
+						//
+						mPageTable[i] = new TranslationEntry();
+						mPageTable[i].virtualPage = i;
+						mPageTable[i].physicalPage = mFreeMap.find();
+						mPageTable[i].valid = true;
+						mPageTable[i].use = false;
+						mPageTable[i].dirty = false;
+
+						// if the code segment was entirely on
+						mPageTable[i].readOnly = false;
+						// a separate page, we could set its
+						// pages to be read-only
+
+						// Zero out all of main memory
+						Arrays.fill(Machine.mMainMemory, mPageTable[i].physicalPage * Machine.PageSize,
+								(mPageTable[i].physicalPage + 1) * Machine.PageSize, (byte) 0);
+
+						// Copy the code segment into memory
+						if ((i * Machine.PageSize) < (noffH.code.size + noffH.initData.size)) {
+							Debug.print('a',
+									"Initializing code segment, at " + noffH.code.virtualAddr + ", size " + noffH.code.size);
+
+							// Create a temporary buffer to copy the code
+							byte[] bytes = new byte[Machine.PageSize];
+
+							// read the code into the buffer
+							executable.readAt(bytes, Machine.PageSize, noffH.code.inFileAddr + i * Machine.PageSize);
+
+							// Copy the buffer into the main memory
+							System.arraycopy(bytes, 0, Machine.mMainMemory, mPageTable[i].physicalPage * Machine.PageSize,
+									Machine.PageSize);
+						}
+					}else{
+						mPageTable[i] = new TranslationEntry();
+						mPageTable[i].virtualPage = i;
+						mPageTable[i].physicalPage = -1;
+						mPageTable[i].valid = false;
+						mPageTable[i].use = false;
+						mPageTable[i].dirty = false;
+
+						// if the code segment was entirely on
+						mPageTable[i].readOnly = false;
+						
+					}
+					
+				}
+				
+		
+	}
 	/**
 	 * 
 	 * @param pToCopy
@@ -227,6 +329,12 @@ public class AddrSpace {
 	public void restoreState() {
 		MMU.mPageTable = mPageTable;
 		MMU.mPageTableSize = mNumPages;
+	}
+	public TranslationEntry setSpecificPageEntry(int index){
+		return this.mPageTable[index];
+	}
+	public void setSpecificPageEntry(int index,TranslationEntry entry){
+		this.mPageTable[index] = entry;
 	}
 	
 }
