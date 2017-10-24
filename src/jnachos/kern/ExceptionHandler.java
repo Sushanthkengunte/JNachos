@@ -40,12 +40,15 @@ public abstract class ExceptionHandler {
 			break;
 		case PageFaultException:
 			System.out.println("Page fault happened");
+			System.out.println("With process ID = " + JNachos.getCurrentProcess().getProcessID());
 			int pid = JNachos.getCurrentProcess().getProcessID();
 			SwapSpace temp = Machine.swapSpaceMap.get(pid);
 			int physicalPage = AddrSpace.mFreeMap.find();
 			int arg = Machine.readRegister(39);
 			int vpn = (int) arg/Machine.PageSize;
 			//System.out.println(temp.getSwapTable().get(vpn).physicalPage);
+			
+			
 			
 			if(physicalPage!=-1){
 				//if there is a free page in physical memory
@@ -63,11 +66,50 @@ public abstract class ExceptionHandler {
 				
 				Machine.invertedTable.put(physicalPage, JNachos.getCurrentProcess().getProcessID());
 				
+				///
+				FirstInFirstOut.SetFifoCounter(physicalPage);
+				///
+				
 				for(int k : Machine.invertedTable.keySet()){
 					System.out.println(k + "  " + Machine.invertedTable.get(k));
 				}
 				
 			}else{
+				System.out.println("No more space");
+				
+				////FIFO implementation 
+				
+				int physicalToSwap = FirstInFirstOut.noSpace();
+				int pidToSwap = Machine.invertedTable.get(physicalToSwap);
+				
+				NachosProcess tempProcess = Machine.hmForAllProcess.get(pidToSwap);
+				tempProcess.getSpace().removePage(physicalToSwap);
+				
+				physicalPage = physicalToSwap;
+				
+				JNachos.getCurrentProcess().getSpace().updateTable(physicalPage, vpn);
+				
+				int swapSpaceSeekValue = temp.getSwapTable().get(vpn).physicalPage;
+				String fileName = temp.swapFileName;
+				JavaOpenFile openedFile = (JavaOpenFile) JNachos.mFileSystem.open(fileName);
+				byte[] bytes = new byte[Machine.PageSize];
+				
+				openedFile.readAt(bytes, Machine.PageSize,swapSpaceSeekValue);
+				Arrays.fill(Machine.mMainMemory, physicalPage * Machine.PageSize,
+						(physicalPage + 1) * Machine.PageSize, (byte) 0);
+				System.arraycopy(bytes, 0, Machine.mMainMemory, physicalPage * Machine.PageSize,
+						Machine.PageSize);
+				
+				Machine.invertedTable.put(physicalPage, JNachos.getCurrentProcess().getProcessID());
+				
+				///
+				FirstInFirstOut.SetFifoCounter(physicalPage);
+				///
+				
+				
+				////
+				
+				
 				//if there is no free page in physical memory,implement page replacement algorithm
 			}
 			/*for(int k: temp.getSwapTable().keySet())

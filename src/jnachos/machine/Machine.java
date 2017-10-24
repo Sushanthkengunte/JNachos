@@ -31,7 +31,7 @@ public class Machine {
 
 	// Set the page size equal to the disk sector size, for simplicity
 	public static final int PageSize = 128;
-	public static final int NumPhysPages = 110;
+	public static final int NumPhysPages = 40;
 	public static final int MemorySize = (NumPhysPages * PageSize);
 	public static final int TLBSize = 4; // if there is a TLB, make it small
 
@@ -230,7 +230,7 @@ public class Machine {
 		Debug.print('a', "Reading VA " + Integer.toHexString(addr) + ", size " + size);
 
 		exception = MMU.translate(addr, physicalAddress, size, false);
-
+		int temppid = JNachos.getCurrentProcess().getProcessID();
 		if (exception != ExceptionType.NoException) {
 			if(exception == ExceptionType.PageFaultException){
 				raiseException(ExceptionType.PageFaultException, addr);

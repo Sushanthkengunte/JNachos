@@ -153,6 +153,26 @@ public class AddrSpace {
 		mPageTable[vpn] = temp;
 	}
 	
+	public void removePage(int phyPage) {
+		for(TranslationEntry temp : mPageTable) {
+			
+			if(temp.physicalPage == phyPage) {
+				
+				/**
+				 * Todo: if temp.dirty = true, write bytes[] from memory to swapSpace
+				 */
+				
+				
+				temp.physicalPage = -1;
+				temp.valid = false;
+				break;
+			}
+			
+		}
+		
+		
+	}
+	
 	public AddrSpace(OpenFile executable) {
 		// Create buffer to hold onto the noff header
 				byte[] buffer = new byte[NoffHeader.size];
@@ -169,6 +189,8 @@ public class AddrSpace {
 					// If so swap the headers
 					swapHeader(noffH);
 				}
+				
+				int temppid = JNachos.getCurrentProcess().getProcessID();
 
 				// Make sure that the magic numbers match
 				assert (noffH.noffMagic == NoffHeader.NOFFMAGIC);

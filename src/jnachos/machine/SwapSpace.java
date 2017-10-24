@@ -73,13 +73,17 @@ public class SwapSpace extends JavaOpenFile{
 			eachEntry.readOnly = false;
 			// a separate page, we could set its
 			// pages to be read-only
+			
+			if(i==39) {
+				System.out.println();
+			}
 
 			/* Zero out all of main memory
 			Arrays.fill(Machine.mMainMemory, mPageTable[i].physicalPage * Machine.PageSize,
 					(mPageTable[i].physicalPage + 1) * Machine.PageSize, (byte) 0);*/
 
 			// Copy the code segment into memory
-			if ((i * Machine.PageSize) < (noffH.code.size + noffH.initData.size)) {
+			//if ((i * Machine.PageSize) < (noffH.code.size + noffH.initData.size)) {
 				Debug.print('a',
 						"Initializing code segment, at " + noffH.code.virtualAddr + ", size " + noffH.code.size);
 
@@ -103,11 +107,11 @@ public class SwapSpace extends JavaOpenFile{
 				lseek += offset;
 				swapTable.put(i, eachEntry);
 				
-			}else{
-				eachEntry.physicalPage = lseek;
-				swapTable.put(i, eachEntry);
-				
-			}
+//			}else{
+//				eachEntry.physicalPage = lseek;
+//				swapTable.put(i, eachEntry);
+//				
+//			}
 		}
 		
 	}
