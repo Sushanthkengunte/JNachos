@@ -8,8 +8,11 @@
  */
 package jnachos.kern;
 
+import java.util.Arrays;
+
 import javax.crypto.Mac;
 
+import jnachos.filesystem.JavaOpenFile;
 import jnachos.machine.*;
 
 /**
@@ -46,9 +49,23 @@ public abstract class ExceptionHandler {
 			
 			if(physicalPage!=-1){
 				//if there is a free page in physical memory
+				JNachos.getCurrentProcess().getSpace().updateTable(physicalPage, vpn);
+				
 				int swapSpaceSeekValue = temp.getSwapTable().get(vpn).physicalPage;
+				String fileName = temp.swapFileName;
+				JavaOpenFile openedFile = (JavaOpenFile) JNachos.mFileSystem.open(fileName);
+				byte[] bytes = new byte[Machine.PageSize];
+				openedFile.readAt(bytes, Machine.PageSize,swapSpaceSeekValue);
+				Arrays.fill(Machine.mMainMemory, physicalPage * Machine.PageSize,
+						(physicalPage + 1) * Machine.PageSize, (byte) 0);
+				System.arraycopy(bytes, 0, Machine.mMainMemory, physicalPage * Machine.PageSize,
+						Machine.PageSize);
 				
+				Machine.invertedTable.put(physicalPage, JNachos.getCurrentProcess().getProcessID());
 				
+				for(int k : Machine.invertedTable.keySet()){
+					System.out.println(k + "  " + Machine.invertedTable.get(k));
+				}
 				
 			}else{
 				//if there is no free page in physical memory,implement page replacement algorithm
@@ -60,7 +77,7 @@ public abstract class ExceptionHandler {
 			}*/
 				
 			
-			temp.pageRead();
+			//temp.pageRead();
 			
 			
 			break;

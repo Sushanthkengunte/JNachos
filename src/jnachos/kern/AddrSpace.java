@@ -142,6 +142,16 @@ public class AddrSpace {
 		}
 	}
 */
+	public void updateTable(int pageFrameNumber,int vpn){
+		TranslationEntry temp = mPageTable[vpn];
+		temp.physicalPage = pageFrameNumber;
+		temp.valid = true;		
+		temp.use = false;//usage information to be updated for replacement algorithm
+		temp.dirty = false;
+		// if the code segment was entirely on
+		temp.readOnly = false;
+		mPageTable[vpn] = temp;
+	}
 	
 	public AddrSpace(OpenFile executable) {
 		// Create buffer to hold onto the noff header
@@ -183,16 +193,16 @@ public class AddrSpace {
 
 				// first, set up the translation
 				mPageTable = new TranslationEntry[mNumPages];
-				swapArea = new SwapSpace(mNumPages);
-				swapArea.putAllPagesinFile(noffH,executable);
 				
+				swapArea = new SwapSpace(mNumPages);
+				swapArea.putAllPagesinFile(noffH,executable);				
 				Machine.swapSpaceMap.put(JNachos.getCurrentProcess().getProcessID(), swapArea);
 				
 				
 				
 				for (int i = 0; i < mNumPages; i++) {
 					if(i==0){
-						//
+						
 						mPageTable[i] = new TranslationEntry();
 						mPageTable[i].virtualPage = i;
 						mPageTable[i].physicalPage = mFreeMap.find();
@@ -223,6 +233,8 @@ public class AddrSpace {
 							// Copy the buffer into the main memory
 							System.arraycopy(bytes, 0, Machine.mMainMemory, mPageTable[i].physicalPage * Machine.PageSize,
 									Machine.PageSize);
+							
+							Machine.invertedTable.put(mPageTable[i].physicalPage, JNachos.getCurrentProcess().getProcessID());
 						}
 					}else{
 						mPageTable[i] = new TranslationEntry();

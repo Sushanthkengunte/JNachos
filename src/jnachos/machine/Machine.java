@@ -77,6 +77,8 @@ public class Machine {
 	public static  HashMap<Integer,NachosProcess> hmForAllProcess=new HashMap<Integer,NachosProcess>();
 	
 	public static  HashMap<Integer,SwapSpace> swapSpaceMap=new HashMap<Integer,SwapSpace>();
+	
+	public static  HashMap<Integer,Integer> invertedTable=new HashMap<Integer,Integer>();
 
 	/**
 	 * The hardware timer. This class can throw interrupts at scheduable
@@ -306,8 +308,12 @@ public class Machine {
 		exception = MMU.translate(addr, physicalAddress, size, true);
 
 		if (exception != ExceptionType.NoException) {
+			if(exception == ExceptionType.PageFaultException){
+				raiseException(ExceptionType.PageFaultException, addr);
+			}else{
+				Machine.raiseException(ExceptionType.AddressErrorException, addr);				
+			}
 			
-			Machine.raiseException(ExceptionType.AddressErrorException, addr);
 			return false;
 		}
 

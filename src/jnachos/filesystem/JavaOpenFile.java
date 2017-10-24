@@ -29,6 +29,9 @@ public class JavaOpenFile implements OpenFile {
 		this.mFile = mFile;
 	}
 
+	public void incrementCurrent(int currentOffset) {
+		this.currentOffset += currentOffset;
+	}
 	public void setCurrentOffset(int currentOffset) {
 		this.currentOffset = currentOffset;
 	}
