@@ -39,8 +39,8 @@ public abstract class ExceptionHandler {
 			SystemCallHandler.handleSystemCall(type);
 			break;
 		case PageFaultException:
-			System.out.println("Page fault happened");
-			System.out.println("With process ID = " + JNachos.getCurrentProcess().getProcessID());
+			System.out.println("Page fault happened With process ID ="+ JNachos.getCurrentProcess().getProcessID());
+			//System.out.println("With process ID = " + JNachos.getCurrentProcess().getProcessID());
 			int pid = JNachos.getCurrentProcess().getProcessID();
 			SwapSpace temp = Machine.swapSpaceMap.get(pid);
 			int physicalPage = AddrSpace.mFreeMap.find();
@@ -51,7 +51,10 @@ public abstract class ExceptionHandler {
 			
 			
 			if(physicalPage!=-1){
+				System.out.println("Ay! free space found!!");
+				// set function should be called with parameters counter and physical pages
 				//if there is a free page in physical memory
+				LeastRecentlyUsed.set(physicalPage, physicalPage);
 				JNachos.getCurrentProcess().getSpace().updateTable(physicalPage, vpn);
 				
 				int swapSpaceSeekValue = temp.getSwapTable().get(vpn).physicalPage;
@@ -67,33 +70,43 @@ public abstract class ExceptionHandler {
 				Machine.invertedTable.put(physicalPage, JNachos.getCurrentProcess().getProcessID());
 				
 				///
-				FirstInFirstOut.SetFifoCounter(physicalPage);
+				//FirstInFirstOut.SetFifoCounter(physicalPage);
 				///
 				
-				for(int k : Machine.invertedTable.keySet()){
-					System.out.println(k + "  " + Machine.invertedTable.get(k));
-				}
+//				for(int k : Machine.invertedTable.keySet()){
+//					System.out.println(k + "  " + Machine.invertedTable.get(k));
+//				}
 				
 			}else{
-				System.out.println("No more space");
-				
+				System.out.println("Ooops,No more space");
+				//set function and then call to get the end node
+				int physicalToSwap = LeastRecentlyUsed.remove(LeastRecentlyUsed.end);
 				////FIFO implementation 
 				
-				int physicalToSwap = FirstInFirstOut.noSpace();
+				//int physicalToSwap = FirstInFirstOut.noSpace();
+				//get proces ID of other process referring this page
 				int pidToSwap = Machine.invertedTable.get(physicalToSwap);
-				
-				NachosProcess tempProcess = Machine.hmForAllProcess.get(pidToSwap);
-				tempProcess.getSpace().removePage(physicalToSwap);
+				//check if this is same process id ...then update it in swapspace
+				//if(pidToSwap == JNachos.getCurrentProcess().getProcessID()){
+					NachosProcess tempProcess = Machine.hmForAllProcess.get(pidToSwap);
+					tempProcess.getSpace().removePage(physicalToSwap);
+				//}
+				//NachosProcess tempProcess = Machine.hmForAllProcess.get(pidToSwap);
+				//remove the page table from that process
+				//tempProcess.getSpace().removePage(physicalToSwap);
 				
 				physicalPage = physicalToSwap;
 				
 				JNachos.getCurrentProcess().getSpace().updateTable(physicalPage, vpn);
 				
+				LeastRecentlyUsed.set(physicalPage, physicalPage);
 				int swapSpaceSeekValue = temp.getSwapTable().get(vpn).physicalPage;
 				String fileName = temp.swapFileName;
 				JavaOpenFile openedFile = (JavaOpenFile) JNachos.mFileSystem.open(fileName);
 				byte[] bytes = new byte[Machine.PageSize];
-				
+				for(int i=0;i<Machine.PageSize;i++){
+					bytes[i] = 1;
+				}
 				openedFile.readAt(bytes, Machine.PageSize,swapSpaceSeekValue);
 				Arrays.fill(Machine.mMainMemory, physicalPage * Machine.PageSize,
 						(physicalPage + 1) * Machine.PageSize, (byte) 0);
@@ -103,7 +116,7 @@ public abstract class ExceptionHandler {
 				Machine.invertedTable.put(physicalPage, JNachos.getCurrentProcess().getProcessID());
 				
 				///
-				FirstInFirstOut.SetFifoCounter(physicalPage);
+				//FirstInFirstOut.SetFifoCounter(physicalPage);
 				///
 				
 				

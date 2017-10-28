@@ -11,6 +11,7 @@ import jnachos.machine.*;
 import jnachos.userbin.NoffHeader;
 import jnachos.filesystem.*;
 import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * Routines to manage address spaces (executing user programs).
@@ -33,7 +34,7 @@ public class AddrSpace {
 
 	public static BitMap mFreeMap = new BitMap(Machine.NumPhysPages);
 	
-	public static SwapSpace swapArea;
+	public SwapSpace swapArea;
 
 	/**
 	 * Do little endian to big endian conversion on the bytes in the object file
@@ -154,6 +155,7 @@ public class AddrSpace {
 	}
 	
 	public void removePage(int phyPage) {
+		
 		for(TranslationEntry temp : mPageTable) {
 			
 			if(temp.physicalPage == phyPage) {
@@ -161,7 +163,26 @@ public class AddrSpace {
 				/**
 				 * Todo: if temp.dirty = true, write bytes[] from memory to swapSpace
 				 */
-				
+				if(temp.dirty){
+					//overwrite in swap space
+					HashMap<Integer, TranslationEntry> dirtyTable = swapArea.getSwapTable();
+					int lowerSeek = dirtyTable.get(temp.virtualPage).physicalPage;
+					byte[] bytes = new byte[Machine.PageSize];
+					for(int i=0;i<Machine.PageSize;i++){
+						bytes[i] = 1;
+					}
+					//System.arraycopy(bytes, 0, Machine.mMainMemory, mPageTable[i].physicalPage * Machine.PageSize,
+						//	Machine.PageSize);
+					
+					System.arraycopy(Machine.mMainMemory, Machine.PageSize*phyPage, bytes, 0, Machine.PageSize);
+					
+					JavaOpenFile fileName = (JavaOpenFile) JNachos.mFileSystem.open(swapArea.swapFileName);
+					assert(fileName!=null);
+					
+					int offset = fileName.writeAt(bytes, Machine.PageSize,lowerSeek);//, lseek
+					
+				}
+			
 				
 				temp.physicalPage = -1;
 				temp.valid = false;
@@ -224,6 +245,7 @@ public class AddrSpace {
 				
 				for (int i = 0; i < mNumPages; i++) {
 					if(i==0){
+					
 						
 						mPageTable[i] = new TranslationEntry();
 						mPageTable[i].virtualPage = i;
@@ -232,6 +254,8 @@ public class AddrSpace {
 						mPageTable[i].use = false;
 						mPageTable[i].dirty = false;
 
+						LeastRecentlyUsed.set(mPageTable[i].physicalPage, mPageTable[i].physicalPage);
+						
 						// if the code segment was entirely on
 						mPageTable[i].readOnly = false;
 						// a separate page, we could set its

@@ -76,7 +76,7 @@ public class MMU {
 		TranslationEntry entry;
 		int pageFrame;
 
-		Debug.print('a', "Translate 0x" + Integer.toHexString(virtAddr) + ", writing " + (writing ? "write" : "read"));
+   		Debug.print('a', "Translate 0x" + Integer.toHexString(virtAddr) + ", writing " + (writing ? "write" : "read"));
 
 		// check for alignment errors
 		if (((size == 4) && ((virtAddr & 0x3) != 0)) || ((size == 2) && ((virtAddr & 0x1) != 0))) {
@@ -101,7 +101,7 @@ public class MMU {
 				Debug.print('a', "virtual page # " + virtAddr + "  too large for page table size " + mPageTableSize);
 				return ExceptionType.PageFaultException;
 			}
-
+			//get function 
 			entry = mPageTable[vpn];
 		}
 

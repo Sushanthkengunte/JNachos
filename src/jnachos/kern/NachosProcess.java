@@ -288,6 +288,7 @@ public class NachosProcess implements Runnable {
 
 		Machine.hmForAllProcess.remove(this.getProcessID());
 		// Mark this process as to be destroyed
+		//JNachos.getCurrentProcess()
 		JNachos.setProcessToBeDestroyed(this);
 		
 		
