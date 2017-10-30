@@ -377,6 +377,19 @@ public class AddrSpace {
 		
 
 	}
+	public void clearmFreeMap(){
+		for(int i=0;i<mPageTable.length;i++){
+			if(mPageTable[i].valid){
+				
+			int physicalPage = mPageTable[i].physicalPage;
+			mFreeMap.clear(physicalPage);
+			Arrays.fill(Machine.mMainMemory, physicalPage * Machine.PageSize,
+					(physicalPage + 1) * Machine.PageSize, (byte) 0);
+			System.out.println("Hurray!!Cleared used page!");
+			}
+			
+		}
+	}
 
 	/**
 	 * On a context switch, restore the machine state so that this address space

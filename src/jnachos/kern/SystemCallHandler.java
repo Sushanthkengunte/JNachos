@@ -97,6 +97,9 @@ public class SystemCallHandler {
 			//JNachos.getCurrentProcess().finish();
 			
 			NachosProcess processWaiting = JNachos.getCurrentProcess().getWaitingProcess();
+			//JNachos.getCurrentProcess().getSpace()
+			//clear all the bits in the pageTable
+			JNachos.getCurrentProcess().getSpace().clearmFreeMap();
 			
 			if( processWaiting != null){
 				

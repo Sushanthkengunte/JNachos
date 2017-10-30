@@ -29,6 +29,7 @@ public abstract class ExceptionHandler {
 	 *            The type of exception that was raised.
 	 * @see ExceptionType.java
 	 */
+	
 	public static void handleException(ExceptionType pException) {
 		switch (pException) {
 		// If this type was a system call
@@ -39,6 +40,7 @@ public abstract class ExceptionHandler {
 			SystemCallHandler.handleSystemCall(type);
 			break;
 		case PageFaultException:
+			
 			System.out.println("Page fault happened With process ID ="+ JNachos.getCurrentProcess().getProcessID());
 			//System.out.println("With process ID = " + JNachos.getCurrentProcess().getProcessID());
 			int pid = JNachos.getCurrentProcess().getProcessID();
@@ -51,7 +53,7 @@ public abstract class ExceptionHandler {
 			
 			
 			if(physicalPage!=-1){
-				System.out.println("Ay! free space found!!");
+				System.out.println("Yay! free space found!!");
 				// set function should be called with parameters counter and physical pages
 				//if there is a free page in physical memory
 				LeastRecentlyUsed.set(physicalPage, physicalPage);
@@ -134,7 +136,7 @@ public abstract class ExceptionHandler {
 			
 			//temp.pageRead();
 			
-			
+			//System.out.println(count);
 			break;
 
 		// All other exceptions shut down for now

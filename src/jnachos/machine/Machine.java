@@ -74,6 +74,7 @@ public class Machine {
 	/**
 	 * Contains all the processes
 	 */
+	
 	public static  HashMap<Integer,NachosProcess> hmForAllProcess=new HashMap<Integer,NachosProcess>();
 	
 	public static  HashMap<Integer,SwapSpace> swapSpaceMap=new HashMap<Integer,SwapSpace>();

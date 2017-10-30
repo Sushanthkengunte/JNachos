@@ -103,6 +103,7 @@ public class SwapSpace extends JavaOpenFile{
 				
 
 		}
+		//System.out.println(lseek);
 		//System.out.println("finished swap space creation");
 	}
 	
