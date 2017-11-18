@@ -179,7 +179,7 @@ public class AddrSpace {
 					JavaOpenFile fileName = (JavaOpenFile) JNachos.mFileSystem.open(swapArea.swapFileName);
 					assert(fileName!=null);
 					
-					int offset = fileName.writeAt(bytes, Machine.PageSize,lowerSeek);//, lseek
+					int offset = fileName.writeAt(bytes, Machine.PageSize,lowerSeek);// lseek
 					
 				}
 			

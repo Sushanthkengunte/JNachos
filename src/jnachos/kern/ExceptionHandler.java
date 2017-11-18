@@ -85,17 +85,11 @@ public abstract class ExceptionHandler {
 				int physicalToSwap = LeastRecentlyUsed.remove(LeastRecentlyUsed.end);
 				////FIFO implementation 
 				
-				//int physicalToSwap = FirstInFirstOut.noSpace();
-				//get proces ID of other process referring this page
 				int pidToSwap = Machine.invertedTable.get(physicalToSwap);
-				//check if this is same process id ...then update it in swapspace
-				//if(pidToSwap == JNachos.getCurrentProcess().getProcessID()){
-					NachosProcess tempProcess = Machine.hmForAllProcess.get(pidToSwap);
-					tempProcess.getSpace().removePage(physicalToSwap);
-				//}
-				//NachosProcess tempProcess = Machine.hmForAllProcess.get(pidToSwap);
-				//remove the page table from that process
-				//tempProcess.getSpace().removePage(physicalToSwap);
+				
+				NachosProcess tempProcess = Machine.hmForAllProcess.get(pidToSwap);
+				tempProcess.getSpace().removePage(physicalToSwap);
+		
 				
 				physicalPage = physicalToSwap;
 				
@@ -106,9 +100,7 @@ public abstract class ExceptionHandler {
 				String fileName = temp.swapFileName;
 				JavaOpenFile openedFile = (JavaOpenFile) JNachos.mFileSystem.open(fileName);
 				byte[] bytes = new byte[Machine.PageSize];
-				for(int i=0;i<Machine.PageSize;i++){
-					bytes[i] = 1;
-				}
+				
 				openedFile.readAt(bytes, Machine.PageSize,swapSpaceSeekValue);
 				Arrays.fill(Machine.mMainMemory, physicalPage * Machine.PageSize,
 						(physicalPage + 1) * Machine.PageSize, (byte) 0);
@@ -117,26 +109,12 @@ public abstract class ExceptionHandler {
 				
 				Machine.invertedTable.put(physicalPage, JNachos.getCurrentProcess().getProcessID());
 				
-				///
-				//FirstInFirstOut.SetFifoCounter(physicalPage);
-				///
-				
-				
-				////
+			
 				
 				
 				//if there is no free page in physical memory,implement page replacement algorithm
 			}
-			/*for(int k: temp.getSwapTable().keySet())
-			{
-				System.out.println(k);
-				System.out.println(temp.getSwapTable().get(k).physicalPage);
-			}*/
-				
-			
-			//temp.pageRead();
-			
-			//System.out.println(count);
+		
 			break;
 
 		// All other exceptions shut down for now

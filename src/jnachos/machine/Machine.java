@@ -31,7 +31,7 @@ public class Machine {
 
 	// Set the page size equal to the disk sector size, for simplicity
 	public static final int PageSize = 128;
-	public static final int NumPhysPages = 40;
+	public static final int NumPhysPages = 16;
 	public static final int MemorySize = (NumPhysPages * PageSize);
 	public static final int TLBSize = 4; // if there is a TLB, make it small
 
