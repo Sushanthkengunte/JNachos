@@ -50,6 +50,12 @@ public class NachosFileSystem implements FileSystem {
 	/** The sector where the top level sector is stored. */
 	public static final int DirectorySector = 1;
 
+	
+	
+	
+	
+	
+	
 	// Initial file sizes for the bitmap and directory; until the file system
 	// supports extensible files, the directory size sets the maximum number
 	// of files that can be loaded onto the disk.

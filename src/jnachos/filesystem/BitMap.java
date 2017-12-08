@@ -47,6 +47,19 @@ public class BitMap {
 	public int numClear() {
 		return mNumClear;
 	}
+	public void setNumClear(int value){
+		mNumClear = value;
+	}
+	public int getNumberOfClear(){
+		
+		int count = mNumBits;
+		for (int i = 0; i < mNumBits; i++) {
+			if(mUsed[i])
+				count--;
+			
+		}
+		return count;
+	}
 
 	/**
 	 * Set the bit pBit to false (unused).
@@ -82,7 +95,7 @@ public class BitMap {
 	 * @param pFile
 	 *            The file to write the bitmap to.
 	 */
-	public void writeBack(NachosOpenFile pFile) {
+	public void writeBack(OpenFile pFile) {
 		byte[] buffer = new byte[mNumBits];
 		for (int i = 0; i < mNumBits; i++) {
 			buffer[i] = (byte) (mUsed[i] ? 1 : 0);
@@ -97,7 +110,7 @@ public class BitMap {
 	 * @param pFile
 	 *            The file to Load the bitmap from.
 	 */
-	public void fetchFrom(NachosOpenFile pFile) {
+	public void fetchFrom(OpenFile pFile) {
 		byte[] buffer = new byte[mNumBits];
 		pFile.readAt(buffer, mNumBits, 0);
 
@@ -164,5 +177,25 @@ public class BitMap {
 			}
 		}
 		return -1;
+	}
+	public int checkNextWhichIsFree(){
+		if (mNumClear == 0)
+			return -1;
+		for (int i = 0; i < mNumBits; i++) {
+			if (!mUsed[i]) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	public boolean[] getInverseOfBitMap(){
+		boolean[] mInverse = new boolean[mNumBits];
+		for(int i = 0;i<mNumBits;i++){
+			if(mUsed[i]){
+				mInverse[i] = false;
+			}
+		}
+		
+		return mInverse;
 	}
 }

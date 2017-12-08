@@ -1,39 +1,27 @@
-/**
- * Copyright (c) 1992-1993 The Regents of the University of California.
- * All rights reserved.  See copyright.h for copyright notice and limitation 
- * of liability and disclaimer of warranty provisions.
- *  
- *  Created by Patrick McSweeney on 12/5/08.
- */
 package jnachos.filesystem;
 
-import jnachos.machine.*;
+
+
+
 import jnachos.kern.Debug;
 
-/**
- * Data structures to manage a UNIX-like directory of file names. A directory is
- * a table of pairs: <file name, sector #>, giving the name of each file in the
- * directory, and where to find its file header (the data structure describing
- * where to find the file's data blocks) on disk.
- * 
- * The directory is a table of fixed length entries; each entry represents a
- * single file, and contains the file name, and the location of the file header
- * on disk. The fixed size of each directory entry means that we have the
- * restriction of a fixed maximum size for file names.
- * 
- * The constructor initializes an empty directory of a certain size; we use
- * ReadFrom/WriteBack to fetch the contents of the directory from disk, and to
- * write back any modifications back to disk.
- * 
- * Also, this implementation has the restriction that the size of the directory
- * cannot expand. In other words, once all the entries in the directory are
- * used, no more files can be created. Fixing this is one of the parts to the
- * assignment.
- * 
- *
- */
-public class Directory {
+import jnachos.machine.JavaSys;
 
+public class InodeMap {
+	
+//	private static  HashMap<Integer,InodeMapValue> imap=new HashMap<Integer,InodeMapValue>();
+//
+//	public static InodeMapValue getImapValue(Integer fileDescriptor) {
+//		if(!imap.containsKey(fileDescriptor))
+//			return null;
+//		
+//		return imap.get(fileDescriptor);
+//	}
+//
+//	public static void updateImap(Integer fileDescriptor, InodeMapValue address) {
+//		if(imap.containsKey(fileDescriptor))
+//			imap.put(fileDescriptor, address);
+//	}
 	/**
 	 * for simplicity, we assume file names are <= 9 characters long
 	 */
@@ -47,7 +35,7 @@ public class Directory {
 	 * Internal data structures kept public so that Directory operations can
 	 * access them directly.
 	 */
-	class DirectoryEntry {
+	class InodeMapValue {
 		/** Is this directory entry in use? */
 		public boolean mInUse;
 
@@ -62,7 +50,7 @@ public class Directory {
 		public char[] mName;
 
 		/** DirectoryEntry constructor. */
-		DirectoryEntry() {
+		InodeMapValue() {
 		}
 
 	}
@@ -72,7 +60,7 @@ public class Directory {
 	 * 
 	 * @return The size of a directory entry
 	 */
-	public static int sizeOfDirectoryEntry() {
+	public static int sizeOfInodeMapValue() {
 		return FILENAMEMAXLEN * 2 + 1 + 4;
 	}
 
@@ -82,7 +70,7 @@ public class Directory {
 	/**
 	 * Table of pairs: <file name, file header location>
 	 */
-	private DirectoryEntry[] mTable;
+	private InodeMapValue[] mTable;
 
 	/**
 	 * Initialize a directory; initially, the directory is completely empty. If
@@ -93,16 +81,16 @@ public class Directory {
 	 *            the number of entries in the directory.
 	 */
 
-	public Directory(int pSize) {
+	public InodeMap(int pSize) {
 		// Create teh table array
-		mTable = new DirectoryEntry[pSize];
+		mTable = new InodeMapValue[pSize];
 
 		// Save the table size
 		mTableSize = pSize;
 
 		// Create the directory taable
 		for (int i = 0; i < mTableSize; i++) {
-			mTable[i] = new DirectoryEntry();
+			mTable[i] = new InodeMapValue();
 			mTable[i].mInUse = false;
 		}
 	}
@@ -122,7 +110,7 @@ public class Directory {
 	 */
 	public void fetchFrom(OpenFile pFile) {
 
-		int size = NachosFileSystem.NumDirEntries * sizeOfDirectoryEntry();
+		int size = LogStructureFS.NumDirEntries * sizeOfInodeMapValue();
 		byte[] buffer = new byte[size];
 		pFile.readAt(buffer, size, 0);
 
@@ -130,12 +118,12 @@ public class Directory {
 		// mTable = new DirectoryEntry[mTableSize];
 		for (int i = 0; i < mTableSize; i++) {
 
-			mTable[i] = new DirectoryEntry();
-			mTable[i].mInUse = (buffer[i * sizeOfDirectoryEntry() + 4] == (byte) 1);
+			mTable[i] = new InodeMapValue();
+			mTable[i].mInUse = (buffer[i * sizeOfInodeMapValue() + 4] == (byte) 1);
 			if (mTable[i].mInUse) {
-				mTable[i].mSector = JavaSys.bytesToInt(buffer, i * sizeOfDirectoryEntry() + 5).intValue();
+				mTable[i].mSector = JavaSys.bytesToInt(buffer, i * sizeOfInodeMapValue() + 5).intValue();
 				byte[] bName = new byte[FILENAMEMAXLEN * 2];
-				System.arraycopy(buffer, i * sizeOfDirectoryEntry() + 9, bName, 0, bName.length);
+				System.arraycopy(buffer, i * sizeOfInodeMapValue() + 9, bName, 0, bName.length);
 				mTable[i].mName = new String(bName).trim().toCharArray();
 				// System.out.println("FILE: " + mTable[i].mName.t);
 			}
@@ -158,7 +146,7 @@ public class Directory {
 	 *            The file to contain the new directory contents.
 	 */
 	public void writeBack(OpenFile pFile) {
-		int size = NachosFileSystem.NumDirEntries * sizeOfDirectoryEntry() + 4;
+		int size = NachosFileSystem.NumDirEntries * sizeOfInodeMapValue() + 4;
 		byte[] buffer = new byte[size];
 
 		JavaSys.intToBytes(mTableSize, buffer, 0);
@@ -166,9 +154,9 @@ public class Directory {
 		// (void) file->ReadAt((char *)table, tableSize *
 		// sizeof(DirectoryEntry), 0);
 		for (int i = 0; i < mTableSize; i++) {
-			buffer[i * sizeOfDirectoryEntry() + 4] = (byte) (mTable[i].mInUse ? 1 : 0);
+			buffer[i * sizeOfInodeMapValue() + 4] = (byte) (mTable[i].mInUse ? 1 : 0);
 			if (mTable[i].mInUse) {
-				JavaSys.intToBytes(mTable[i].mSector, buffer, i * sizeOfDirectoryEntry() + 5);
+				JavaSys.intToBytes(mTable[i].mSector, buffer, i * sizeOfInodeMapValue() + 5);
 				String sName = new String(mTable[i].mName);
 				for (int j = sName.length(); j < FILENAMEMAXLEN; j++) {
 					sName += " ";
@@ -176,7 +164,7 @@ public class Directory {
 				byte[] bName = sName.getBytes();
 				byte[] nameBuffer = new byte[FILENAMEMAXLEN * 2];
 				System.arraycopy(bName, 0, nameBuffer, 0, Math.min(bName.length, nameBuffer.length));
-				System.arraycopy(nameBuffer, 0, buffer, i * sizeOfDirectoryEntry() + 9, nameBuffer.length);
+				System.arraycopy(nameBuffer, 0, buffer, i * sizeOfInodeMapValue() + 9, nameBuffer.length);
 			}
 		}
 
@@ -184,6 +172,7 @@ public class Directory {
 
 	}
 
+	
 	/**
 	 * Look up file name in directory, and return its location in the table of
 	 * directory entries.
@@ -226,6 +215,17 @@ public class Directory {
 		}
 		return -1;
 	}
+	
+	public void update(String pName,int sector){
+		int fileIndex = findIndex(pName);
+		if(fileIndex == -1){
+			add(pName, sector);
+		}else{
+			mTable[fileIndex].mSector = sector;	
+		}
+		
+		
+	}
 
 	/**
 	 * Add a file into the directory. Return TRUE if successful; return FALSE if
@@ -262,7 +262,6 @@ public class Directory {
 		}
 		return false; // no space. Fix when we have extensible files.
 	}
-
 
 	/**
 	 * Remove a file name from the directory.
@@ -302,12 +301,13 @@ public class Directory {
 	 * the contents of each file. For debugging.
 	 */
 	public void print() {
-		FileHeader hdr = new FileHeader();
+		Inode hdr = new Inode();
 
 		System.out.println("Directory contents:\n");
 
 		for (int i = 0; i < mTableSize; i++) {
 			if (mTable[i].mInUse) {
+				
 				System.out.println("Name: " + new String(mTable[i].mName) + ", Sector: " + mTable[i].mSector);
 				hdr.fetchFrom(mTable[i].mSector);
 				hdr.print();
@@ -315,4 +315,5 @@ public class Directory {
 		}
 		// delete hdr;
 	}
+
 }

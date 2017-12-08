@@ -101,6 +101,12 @@ public class JavaSys {
 		bytes[start + 3] = (byte) (value);
 
 	}
+	
+	public static void charToBytes(char[] value,byte[] bytes,int start){
+		
+		System.arraycopy(value, 0, bytes, 0, bytes.length);
+		
+	}
 
 	/**
 	 * Read byte acters from an open file. Abort if read fails.

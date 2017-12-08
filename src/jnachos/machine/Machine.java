@@ -9,6 +9,8 @@ package jnachos.machine;
 
 import java.util.HashMap;
 
+import jnachos.filesystem.LogStructureFS;
+
 import jnachos.kern.*;
 
 /**
@@ -81,6 +83,7 @@ public class Machine {
 	
 	public static  HashMap<Integer,Integer> invertedTable=new HashMap<Integer,Integer>();
 
+	//public static MemoryBuffer mBuffer;
 	/**
 	 * The hardware timer. This class can throw interrupts at scheduable
 	 * intervals.

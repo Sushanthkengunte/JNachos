@@ -8,6 +8,10 @@
 package jnachos.kern;
 
 import jnachos.machine.*;
+import jnachos.userbin.NoffHeader;
+
+import java.io.File;
+
 import jnachos.filesystem.*;
 
 /**
@@ -82,12 +86,13 @@ public abstract class JNachos {
 	 * types of file systems. The JavaFileSystem, is a layer between java and
 	 * jnachos
 	 */
-	public static FileSystem mFileSystem;
+	public static LogStructureFS mFileSystem;
 
 	/**
 	 * A Synchronized Disk. Used for controlled access to the disk.
 	 */
 	public static SynchDisk mSynchDisk;
+	
 
 	/*
 	 * 
@@ -198,7 +203,9 @@ public abstract class JNachos {
 		mMachine = new Machine(debugUserProg, (new TimerInterruptHandler()), seed, randomYield);
 		mSynchDisk = new SynchDisk("DISK");
 
-		mFileSystem = new JavaFileSystem(format);
+		mFileSystem = new LogStructureFS();
+		//format = true;
+		mFileSystem.LogStructureFSConstructor(format);
 
 		/*
 		 * mPostOffice = new PostOffice(netname, rely, 10);
@@ -212,6 +219,8 @@ public abstract class JNachos {
 	 **/
 	public static void cleanUp() {
 		Debug.print('n', "\nCleaning up...\n");
+		//JNachos.mFileSystem.writeBackTheFile();
+		//JNachos.mFileSystem.writeBackTheSegmentFile();
 
 		// Exit the program
 		System.exit(0);
@@ -257,6 +266,27 @@ public abstract class JNachos {
 		assert ((pProcess == mCurrentProcess) || (pProcess == null));
 		mProcessToBeDestroyed = pProcess;
 	}
+	public static void createFileInLog(String filename){
+		
+		
+		FileSystem mFileSystemJava= new JavaFileSystem(true);
+		OpenFile executable = mFileSystemJava.open(filename);
+		if (executable == null) {
+			Debug.print('t', "Unable to open file" + filename);
+			return;
+		}
+		byte[] contentsOFTheFile = new byte[40];
+		executable.readAt(contentsOFTheFile, 40,0);
+
+
+		
+		mFileSystem.create(filename, contentsOFTheFile.length);
+		mFileSystem.putContentsIntoFile(filename, contentsOFTheFile);
+		
+		
+		
+		
+	}
 
 	/**
 	 * Starts a user process written in C. Run a user program. Open the
@@ -264,6 +294,8 @@ public abstract class JNachos {
 	 **/
 	public static void startProcess(String filename) {
 		// The executable file to run
+		
+		//createFileInLog(filename);
 		OpenFile executable = mFileSystem.open(filename);
 
 		// If the file does not exist

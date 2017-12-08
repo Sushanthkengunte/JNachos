@@ -92,7 +92,7 @@ public class SwapSpace extends JavaOpenFile{
 				//System.arraycopy(bytes, 0, Machine.mMainMemory, mPageTable[i].physicalPage * Machine.PageSize,
 						//Machine.PageSize);
 				
-				JavaOpenFile fileName = (JavaOpenFile) JNachos.mFileSystem.open(swapFileName);
+				OpenFile fileName = (OpenFile) JNachos.mFileSystem.open(swapFileName);
 				assert(fileName!=null);
 				
 				int offset = fileName.writeAt(bytes, Machine.PageSize,lseek);//, lseek
