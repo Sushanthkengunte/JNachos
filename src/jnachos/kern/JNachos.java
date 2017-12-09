@@ -204,7 +204,7 @@ public abstract class JNachos {
 		mSynchDisk = new SynchDisk("DISK");
 
 		mFileSystem = new LogStructureFS();
-		//format = true;
+		format = true;
 		mFileSystem.LogStructureFSConstructor(format);
 
 		/*

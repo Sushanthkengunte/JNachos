@@ -415,12 +415,26 @@ public class LogStructureFS implements FileSystem {
 		byte[] buffer = new byte[size];
 		int count = 0;
 		for(int key:liveBlocks.keySet()){
+			directory.fetchFrom(mInodeMap);
+			
 			LiveBlockInformation tempOFInformation = liveBlocks.get(key);
 			byte[] smallbuffer = new byte[128];
 			JNachos.mSynchDisk.readSector(key, smallbuffer);
 			System.arraycopy(smallbuffer, 0, buffer, 128*count, smallbuffer.length);
-			int sector = findAFreeSector(tempOFInformation.fileName);
-			JNachos.mSynchDisk.writeSector(sector, smallbuffer);
+			
+			
+			
+			int sector = JNachos.mFileSystem.findAFreeSector(tempOFInformation.fileName);
+			InodeNormal hdr = new InodeNormal(tempOFInformation.fileName);
+			int fileSectorNumber = directory.find(tempOFInformation.fileName);
+			hdr.fetchFrom(fileSectorNumber);
+			hdr.modifyTheInBlockInformation(tempOFInformation.datablock, sector);
+			System.out.println("Writing back sector"+tempOFInformation.datablock+"into sector"+sector+"of file"+tempOFInformation.fileName+"from segment"+tempOFInformation.segment);
+			
+			JNachos.mSynchDisk.writeSector(sector, smallbuffer);			
+			int newInodeSector = JNachos.mFileSystem.findAFreeSector(tempOFInformation.fileName+"_H");
+			hdr.writeBack(newInodeSector);
+			//get the header of the file change the data blocks and write back to the disk
 		}
 		
 		for(int i : segments){

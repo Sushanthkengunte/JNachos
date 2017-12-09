@@ -110,7 +110,7 @@ public class Main {
 		//new peroxide();
 		//new ProcessTest();
 
-		//new createFileInLogFS();
+		//new CreateNewFile();
 		new readFiles();
 		// The number arguments
 		int argc = args.length;
