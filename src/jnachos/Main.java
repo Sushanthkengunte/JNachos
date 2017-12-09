@@ -111,7 +111,8 @@ public class Main {
 		//new ProcessTest();
 
 		//new CreateNewFile();
-		new readFiles();
+		//new readFiles();
+		//new readFile();
 		// The number arguments
 		int argc = args.length;
 

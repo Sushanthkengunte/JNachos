@@ -301,7 +301,7 @@ public class InodeMap {
 	 * the contents of each file. For debugging.
 	 */
 	public void print() {
-		Inode hdr = new Inode();
+		
 
 		System.out.println("Directory contents:\n");
 
@@ -309,6 +309,7 @@ public class InodeMap {
 			if (mTable[i].mInUse) {
 				
 				System.out.println("Name: " + new String(mTable[i].mName) + ", Sector: " + mTable[i].mSector);
+				InodeNormal hdr = new InodeNormal(new String(mTable[i].mName));
 				hdr.fetchFrom(mTable[i].mSector);
 				hdr.print();
 			}

@@ -786,8 +786,8 @@ public class LogStructureFS implements FileSystem {
 	
 	
 	
-	public static int getFirstFreeSector(int segment){
-		return segment*NumberOfSectorsInASegment;
-	}
+//	public static int getFirstFreeSector(int segment){
+//		return segment*NumberOfSectorsInASegment;
+//	}
 
 }
